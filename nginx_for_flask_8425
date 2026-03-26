@@ -2,7 +2,7 @@ server {
     listen 80;
     listen [::]:80;
     # Replace with your assigned Route 53 subdomain before enabling this site.
-    server_name your-subdomain.opencodingsociety.com;
+    server_name beasts.opencodingsociety.com;
 
     # Proxy all traffic to the Flask app on 8425.
     location / {
