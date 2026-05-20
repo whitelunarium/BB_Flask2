@@ -3,6 +3,7 @@
 
 from flask import Blueprint, jsonify, request, current_app
 from app.services import risk_service
+from app.services.risk_service import RiskDataUnavailable
 from app.utils.errors import error_response
 
 risk_bp = Blueprint('risk', __name__)
@@ -22,6 +23,12 @@ def get_risk():
         neighborhood_id = request.args.get('neighborhood_id', type=int)
         assessment = risk_service.get_risk_assessment(neighborhood_id=neighborhood_id)
         return jsonify(assessment), 200
+    except RiskDataUnavailable:
+        try:
+            current_app.logger.warning('risk.get_risk unavailable')
+        except Exception:
+            pass
+        return error_response('SERVER_ERROR', 503, {'detail': 'Risk service unavailable.'})
     except Exception:
         # SECURITY: do NOT pass str(e) to the client — exception messages
         # from Open-Meteo or SQLAlchemy frequently include URLs (with
