@@ -38,11 +38,16 @@ else
 fi
 
 echo "2. Rebuilding container image (this may take a minute)…"
-docker compose build --pull
+# EC2's docker doesn't ship the v2 plugin (`docker compose ...`) — it
+# only has the legacy hyphenated `docker-compose`, which also doesn't
+# accept `--pull` as a build flag. Use the hyphenated form and drop
+# the flag (it only refreshed base images; not needed for app-code
+# changes and not supported here anyway).
+docker-compose build
 echo ""
 
 echo "3. Restarting container…"
-docker compose up -d
+docker-compose up -d
 echo ""
 
 # Wait a moment for the container to start serving traffic
