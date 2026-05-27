@@ -2,6 +2,8 @@
 
 Python Flask API server for the Poway Neighborhood Emergency Corps website. Provides all data endpoints consumed by the Jekyll frontend.
 
+**NOT AN ACTIVE FORK**
+
 ## Setup
 
 **Prerequisites:** Python 3.9+
@@ -46,7 +48,7 @@ REDIS_URL=redis://localhost:6379/0
 
 ```bash
 source venv/bin/activate
-flask run --port 8425
+python main.py
 ```
 
 API available at `http://localhost:8425`.
