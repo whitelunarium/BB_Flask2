@@ -1,5 +1,19 @@
-# app/services/gemini_service.py
-# Responsibility: Chat proxy — tries Groq first (generous free tier), falls back to Gemini.
+# app/services/chat_service.py
+#
+# PNEC chatbot proxy. Despite the historical "/api/gemini" route URL,
+# this service calls Groq FIRST (llama-3.3-70b-versatile) and only
+# falls back to Gemini (gemini-2.5-flash-lite) if Groq is unconfigured
+# or errors out.
+#
+# Why Groq is primary: its free tier handles roughly 14,400 chatbot
+# requests per day, which is much higher than Gemini's free quota.
+# We switched the chatbot to Groq once real resident traffic started
+# hitting Gemini's rate limits.
+#
+# The route file is still named app/routes/gemini.py and the URL is
+# still /api/gemini. The deployed frontend hits that URL in 4 places
+# (assets/js/api/gemini.js, poway-page-enhancements.js, etc.) so
+# renaming the endpoint would need a coordinated FE/BE change.
 
 import requests
 from flask import current_app
@@ -11,7 +25,7 @@ def generate_chat_response(system_prompt, user_message, history=None, image_data
     if not user_message:
         return None, 'MISSING_MESSAGE'
 
-    # Try Groq first — 14,400 req/day free, OpenAI-compatible
+    # Try Groq first (14,400 req/day on the free tier, OpenAI-compatible API)
     groq_key = current_app.config.get('GROQ_API_KEY')
     if groq_key:
         text, err = _call_groq(groq_key, system_prompt, user_message, history)

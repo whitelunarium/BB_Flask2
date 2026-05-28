@@ -46,8 +46,8 @@ The repo has a real `.env` with live credentials. It is gitignored. Do not commi
 - `SECRET_KEY`: Flask session signing key. Required in prod.
 - `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_DISPLAY_NAME`: seeded on first boot. Password must be 12+ characters or the seed is skipped on purpose.
 - `DB_ENDPOINT`, `DB_USERNAME`, `DB_PASSWORD`: if all three are set, the app uses MySQL at `mysql+pymysql://{user}:{pass}@{host}:3306/pnec`. Otherwise it falls back to SQLite.
-- `GEMINI_API_KEY`, `GEMINI_MODEL`: powers the PNEC chatbot at `/api/gemini`. Default model is `gemini-2.5-flash-lite`.
-- `GROQ_API_KEY`, `GROQ_MODEL`: used by the AI prompt engineer in the Live Theme Editor. Default is `llama-3.3-70b-versatile`.
+- `GROQ_API_KEY`, `GROQ_MODEL`: **primary AI provider.** Powers both the PNEC chatbot (route `/api/gemini`, despite the URL name) and the Live Theme Editor's prompt engineer. Default model is `llama-3.3-70b-versatile`. We use Groq as primary because its free tier handles many more requests per day than Gemini's free tier, which mattered once real resident traffic started hitting the chatbot.
+- `GEMINI_API_KEY`, `GEMINI_MODEL`: **chatbot fallback only.** Used if Groq is unconfigured or errors out. Default model is `gemini-2.5-flash-lite`. Safe to leave unset if you do not need a fallback. Not used by the Live Theme Editor.
 - `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`: the Live Theme Editor commits Jekyll changes directly to the frontend repo using the GitHub REST API. Token needs `Contents: read+write` on `whitelunarium/Beasts_FrontEnd`.
 - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_EMAIL`: for web push notifications. Generate with `python3 scripts/generate_vapid_keys.py`.
 - `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`: optional. If blank, mail is logged to stdout in dev.
@@ -86,7 +86,7 @@ Everything is mounted under `/api`. Auth is at `/api/auth`. Admin is at `/api/ad
 - **Live** (`routes/live.py`): "right now" aggregator for the chatbot. Weather, AQI, NWS alerts, fire-weather composite, sun.
 - **Media** (`routes/media.py`): paginated media posts, coordinator+ upload.
 - **Volunteer** (`routes/volunteer.py`): interest form submission and admin management.
-- **Gemini** (`routes/gemini.py`): server-side proxy for the chatbot so the API key never goes to the browser.
+- **Chatbot proxy** (`routes/gemini.py`, endpoint `/api/gemini`): server-side proxy that calls Groq first (Llama-3.3-70B) and falls back to Gemini if Groq is unconfigured or errors out. The route file and URL are still named `gemini` for backwards compatibility with the deployed frontend, which hits `/api/gemini` from `assets/js/api/gemini.js` and three other places. Provider logic lives in `app/services/chat_service.py`.
 - **CMS v2** (`routes/cms_v2.py`, `cms_theme.py`, `cms_ai.py`): the in-browser page editor. Section types are file-based in `app/cms_sections/`, each with an HTML template and a JSON schema.
 - **Admin publish** (`routes/admin_publish.py`): commits Jekyll changes from the Live Theme Editor straight to `Beasts_FrontEnd` via the GitHub REST API. GitHub Pages rebuilds in about 5 min.
 - **Security** (`routes/security.py`): exposes the `security_events` audit log to admins.

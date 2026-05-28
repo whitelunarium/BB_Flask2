@@ -1,11 +1,20 @@
 # app/routes/gemini.py
-# Responsibility: Gemini proxy endpoint for frontend chatbot requests.
+#
+# PNEC chatbot route. NAMING HISTORY: this file and the URL it exposes
+# (/api/gemini) were created when the chatbot used Google Gemini. We
+# later switched the primary provider to Groq (Llama-3.3-70B) because
+# Groq's free tier handles far more requests per day. The file name
+# and URL stayed for backwards compat with the deployed frontend
+# (4 call sites in assets/js/).
+#
+# The actual provider order (Groq primary, Gemini fallback) lives in
+# app/services/chat_service.py. Read that file for the why.
 
 import time
 
 from flask import Blueprint, current_app, jsonify, request
 
-from app.services import gemini_service
+from app.services import chat_service
 from app.utils.errors import error_response
 
 gemini_bp = Blueprint('gemini', __name__)
@@ -17,7 +26,8 @@ _redis_client_url = None
 @gemini_bp.route('/gemini', methods=['POST'])
 def proxy_gemini():
     """
-    Purpose: Generate a free-form chatbot answer through the server-side Gemini proxy.
+    Purpose: Generate a free-form chatbot answer through the server-side chat proxy.
+    Provider order: Groq primary, Gemini fallback. See chat_service.py for why.
     Expected JSON: { prompt: string, text: string }
     """
     data = request.get_json(silent=True) or {}
@@ -30,13 +40,13 @@ def proxy_gemini():
     if _is_rate_limited():
         return error_response('RATE_LIMITED', 429, {'detail': 'Too many chatbot requests. Please wait a minute and try again.'})
 
-    text, err = gemini_service.generate_chat_response(prompt, user_text, history, image_data, image_mime_type)
+    text, err = chat_service.generate_chat_response(prompt, user_text, history, image_data, image_mime_type)
     if err == 'MISSING_MESSAGE':
         return error_response('VALIDATION_FAILED', 400, {'detail': 'Missing chatbot message.'})
     if err == 'GEMINI_NOT_CONFIGURED':
-        return error_response('SERVER_ERROR', 503, {'detail': 'Gemini proxy is not configured.'})
+        return error_response('SERVER_ERROR', 503, {'detail': 'No chat provider configured (set GROQ_API_KEY or GEMINI_API_KEY).'})
     if err:
-        detail = err.get('detail') if isinstance(err, dict) else 'Gemini proxy request failed.'
+        detail = err.get('detail') if isinstance(err, dict) else 'Chat proxy request failed.'
         return error_response('SERVER_ERROR', 502, {'detail': detail})
 
     return jsonify({'text': text}), 200
