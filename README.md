@@ -2,7 +2,7 @@
 
 **NOT AN ACTIVE FORK.** This repo is kept around for reference and handoff context. Do not assume changes here ship anywhere automatically.
 
-Backend API for the Poway Neighborhood Emergency Corps (PNEC) website. PNEC is a volunteer-run emergency preparedness group in Poway, California. The public site lives at https://powaynec.com and serves residents with FAQs, event listings, live hazard data, a chatbot, and a coordinator/staff area for managing content.
+Backend API for the Poway Neighborhood Emergency Corps (PNEC) website. PNEC is a volunteer-run emergency preparedness group in Poway, California. The public site lives at https://pnec.opencodingsociety.com and serves residents with FAQs, event listings, live hazard data, a chatbot, and a coordinator/staff area for managing content.
 
 This repo is the Flask side of a two-repo setup:
 
