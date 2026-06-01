@@ -100,15 +100,6 @@ Code style follows SRP: routes parse the request and call a service, the service
 
 `resident` < `coordinator` < `staff` < `admin`. Decorate protected routes with `@requires_role('staff', 'admin')` from `app/utils/auth_decorators.py`. The admin role can also be unlocked from outside the session by sending the `X-PNEC-Admin-Key` header, which the admin editor UIs use.
 
-## Tests
-
-```
-pytest
-```
-
-`tests/conftest.py` patches the database URL to `sqlite:///:memory:` before `create_app()` runs, so tests never touch the real instance DB. Fixtures: `app`, `client` (anonymous), `admin_client` (logged in as the seeded admin).
-
-Current test files cover the risk service, the CMS v2 endpoints, CMS theme, and stega image handling. Add new tests next to the file you are exercising and follow the same import-after-patch pattern in `conftest.py`.
 
 ## Deployment
 
