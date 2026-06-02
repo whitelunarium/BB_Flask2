@@ -130,7 +130,6 @@ That does `git pull`, `docker-compose build`, `docker-compose up -d`, and an opt
 ## Related repos
 
 - **Beasts_FrontEnd** (`~/Beasts_FrontEnd`): Jekyll site, deployed via GitHub Pages. This is what the public sees. The frontend `hydrate.js` calls the Flask `/api/*` endpoints.
-- **TM_Flask** (`~/TM_Flask`) and **TM_FrontEnd** (`~/TM_FrontEnd`): a sibling project built on the same Flask + Jekyll pattern but unrelated to PNEC. Same shape, different content.
 
 ## License
 
